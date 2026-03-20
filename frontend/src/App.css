@@ -71,3 +71,33 @@ body,
 .react-flow__attribution {
   display: none;
 }
+
+/* Pulse animation for terminal activity badge */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pulse {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+/* Node label editing styles */
+[contenteditable="true"] {
+  outline: none;
+  caret-color: #569cd6;
+}
+
+[contenteditable="true"]:focus {
+  outline: none;
+}

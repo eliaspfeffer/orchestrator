@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd backend && npm install && npx node-gyp rebuild --directory node_modules/node-pty"
+  },
+  "deploy": {
+    "startCommand": "cd backend && npm run dev",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

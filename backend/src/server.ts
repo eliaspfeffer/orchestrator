@@ -1,16 +1,66 @@
 import * as http from 'http';
 import * as WebSocket from 'ws';
+import express from 'express';
+import cors from 'cors';
 import { ptyManager } from './ptyManager';
 import { ClientMessage, ServerMessage } from './types';
+import { validateToken, generateToken } from './auth';
 
-const PORT = 3001;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'orchestrator123';
 
-const httpServer = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Orchestrator Backend running\n');
+// Create Express app
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
 });
 
-const wss = new WebSocket.Server({ server: httpServer });
+// Login endpoint
+app.post('/api/login', (req, res) => {
+  const { password } = req.body as { password?: string };
+  if (!password || password !== ADMIN_PASSWORD) {
+    res.status(403).json({ error: 'Invalid password' });
+    return;
+  }
+  const token = generateToken();
+  res.json({ token });
+});
+
+// Create HTTP server from Express app
+const httpServer = http.createServer(app);
+
+const wss = new WebSocket.Server({ noServer: true });
+
+// Handle WebSocket upgrade with token validation
+httpServer.on('upgrade', (request, socket, head) => {
+  // Extract token from query string or Authorization header
+  let token: string | null = null;
+
+  const url = new URL(request.url || '', `http://localhost:${PORT}`);
+  const queryToken = url.searchParams.get('token');
+  if (queryToken) {
+    token = queryToken;
+  } else {
+    const authHeader = request.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.slice(7);
+    }
+  }
+
+  if (!token || !validateToken(token)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
+});
 
 console.log(`[server] WebSocket server starting on port ${PORT}`);
 

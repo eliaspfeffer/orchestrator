@@ -1,4 +1,6 @@
-export type NodeType = 'text' | 'terminal';
+export type NodeType = 'text' | 'terminal' | 'note' | 'shape';
+
+export type ShapeType = 'rectangle' | 'oval' | 'diamond';
 
 export interface BaseNodeData {
   label: string;
@@ -11,4 +13,14 @@ export interface TerminalNodeData extends BaseNodeData {
 
 export interface TextNodeData extends BaseNodeData {
   content?: string;
+}
+
+export interface NoteNodeData extends BaseNodeData {
+  content?: string;
+  color?: string;
+}
+
+export interface ShapeNodeData extends BaseNodeData {
+  shape: ShapeType;
+  color?: string;
 }

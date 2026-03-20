@@ -1,4 +1,4 @@
-import React, { useRef, memo } from 'react';
+import React, { useRef, memo, useCallback } from 'react';
 import { useTerminal } from './useTerminal';
 import { wsManager } from './wsManager';
 import '@xterm/xterm/css/xterm.css';
@@ -6,13 +6,21 @@ import '@xterm/xterm/css/xterm.css';
 interface Props {
   sessionId: string;
   onFocus?: () => void;
+  onActivity?: () => void;
 }
 
-const TerminalComponent = memo(({ sessionId, onFocus }: Props) => {
+const TerminalComponent = memo(({ sessionId, onFocus, onActivity }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const isFocusedRef = useRef(false);
+
+  const handleActivity = useCallback(() => {
+    if (!isFocusedRef.current && onActivity) {
+      onActivity();
+    }
+  }, [onActivity]);
 
   // Initialize terminal - hook uses empty deps so it only runs once per mount
-  useTerminal(containerRef, sessionId, wsManager);
+  useTerminal(containerRef, sessionId, wsManager, handleActivity);
 
   return (
     <div
@@ -29,7 +37,14 @@ const TerminalComponent = memo(({ sessionId, onFocus }: Props) => {
         // which would steal focus and confuse xterm's mouse tracking
         e.stopPropagation();
         e.preventDefault();
+        isFocusedRef.current = true;
         onFocus?.();
+      }}
+      onFocus={() => {
+        isFocusedRef.current = true;
+      }}
+      onBlur={() => {
+        isFocusedRef.current = false;
       }}
       onClick={(e) => {
         // Prevent React Flow from handling click events inside terminal

@@ -1,13 +1,19 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { NodeProps, NodeResizer } from '@xyflow/react';
 import TerminalComponent from '../Terminal/TerminalComponent';
 import { TerminalNodeData } from '../../types';
 
 const TerminalNode = ({ data, selected }: NodeProps) => {
   const terminalData = data as TerminalNodeData;
+  const [hasActivity, setHasActivity] = useState(false);
 
   const handleFocus = useCallback(() => {
-    // Focus is managed by xterm internally when clicked
+    // Clear activity badge when user clicks into the terminal
+    setHasActivity(false);
+  }, []);
+
+  const handleActivity = useCallback(() => {
+    setHasActivity(true);
   }, []);
 
   return (
@@ -46,6 +52,7 @@ const TerminalNode = ({ data, selected }: NodeProps) => {
           justifyContent: 'space-between',
           userSelect: 'none',
           flexShrink: 0,
+          position: 'relative',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -64,6 +71,19 @@ const TerminalNode = ({ data, selected }: NodeProps) => {
           >
             {terminalData.label || 'Terminal'}
           </span>
+          {/* Activity badge */}
+          {hasActivity && (
+            <div
+              className="pulse"
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#f44747',
+                flexShrink: 0,
+              }}
+            />
+          )}
         </div>
         <span
           style={{
@@ -85,6 +105,7 @@ const TerminalNode = ({ data, selected }: NodeProps) => {
         <TerminalComponent
           sessionId={terminalData.sessionId}
           onFocus={handleFocus}
+          onActivity={handleActivity}
         />
       </div>
     </div>

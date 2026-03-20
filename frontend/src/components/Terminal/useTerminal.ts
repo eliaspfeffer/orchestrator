@@ -7,13 +7,16 @@ import { WebSocketManager } from './wsManager';
 export function useTerminal(
   containerRef: React.RefObject<HTMLDivElement | null>,
   sessionId: string,
-  wsManager: WebSocketManager
+  wsManager: WebSocketManager,
+  onActivity?: () => void
 ): void {
   // Use refs (NOT state) for terminal instances.
   // State would cause re-renders which re-create the terminal and break the session.
   const terminalRef = useRef<Terminal | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const onActivityRef = useRef(onActivity);
+  onActivityRef.current = onActivity;
 
   useEffect(() => {
     // Guard: ensure container exists
@@ -85,6 +88,10 @@ export function useTerminal(
     // 7. Register output callback: PTY output -> terminal display
     wsManager.registerSession(sessionId, (data: string) => {
       terminal.write(data);
+      // Notify activity callback when output is received
+      if (onActivityRef.current) {
+        onActivityRef.current();
+      }
     });
 
     // INPUT FIX: terminal.onData is the ONLY correct way to capture xterm input.

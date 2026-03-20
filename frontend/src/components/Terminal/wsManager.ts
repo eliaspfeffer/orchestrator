@@ -23,16 +23,22 @@ export class WebSocketManager {
     this.connect();
   }
 
+  private getUrlWithToken(): string {
+    const token = localStorage.getItem('auth_token') || '';
+    return `${this.url}?token=${encodeURIComponent(token)}`;
+  }
+
   private connect(): void {
     if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
     this.isConnecting = true;
+    const fullUrl = this.getUrlWithToken();
     console.log(`[wsManager] Connecting to ${this.url}`);
 
     try {
-      this.ws = new WebSocket(this.url);
+      this.ws = new WebSocket(fullUrl);
     } catch (err) {
       console.error('[wsManager] Failed to create WebSocket:', err);
       this.isConnecting = false;
@@ -75,7 +81,10 @@ export class WebSocketManager {
       console.log(`[wsManager] Connection closed (code: ${event.code}, reason: ${event.reason})`);
       this.isConnecting = false;
       this.ws = null;
-      this.scheduleReconnect();
+      // Don't reconnect on 401 (unauthorized)
+      if (event.code !== 1008 && event.code !== 4001) {
+        this.scheduleReconnect();
+      }
     };
 
     this.ws.onerror = (event) => {
@@ -143,5 +152,7 @@ export class WebSocketManager {
   }
 }
 
+const WS_BASE_URL = (import.meta.env.VITE_WS_URL || 'ws://localhost:3001') as string;
+
 // Export a module-level singleton so all terminal components share one connection
-export const wsManager = new WebSocketManager('ws://localhost:3001');
+export const wsManager = new WebSocketManager(WS_BASE_URL);
