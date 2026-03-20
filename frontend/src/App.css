@@ -1,0 +1,73 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #0d1117;
+}
+
+.app {
+  width: 100%;
+  height: 100%;
+}
+
+/* Override xterm.js default styles to ensure it fills its container */
+.xterm {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.xterm-viewport {
+  overflow-y: auto !important;
+}
+
+.xterm-screen {
+  width: 100% !important;
+}
+
+/* React Flow customization */
+.react-flow__node {
+  /* Remove default React Flow node background/border - our nodes provide their own */
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+.react-flow__node.selected {
+  box-shadow: none !important;
+}
+
+/* Controls panel dark theme */
+.react-flow__controls-button {
+  background-color: #2d2d2d !important;
+  border-color: #3c3c3c !important;
+  fill: #d4d4d4 !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #3c3c3c !important;
+}
+
+/* Edge styles */
+.react-flow__edge-path {
+  stroke: #555 !important;
+  stroke-width: 2px !important;
+}
+
+/* Connection line */
+.react-flow__connection-path {
+  stroke: #569cd6 !important;
+}
+
+/* Attribution */
+.react-flow__attribution {
+  display: none;
+}
