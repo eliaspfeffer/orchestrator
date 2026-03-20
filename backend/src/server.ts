@@ -1,4 +1,6 @@
 import * as http from 'http';
+import * as path from 'path';
+import * as fs from 'fs';
 import * as WebSocket from 'ws';
 import express from 'express';
 import cors from 'cors';
@@ -29,6 +31,17 @@ app.post('/api/login', (req, res) => {
   const token = generateToken();
   res.json({ token });
 });
+
+// Serve frontend static files in production
+const frontendDist = path.join(__dirname, '..', 'public');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // SPA fallback: all non-API routes return index.html
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+  console.log(`[server] Serving frontend from ${frontendDist}`);
+}
 
 // Create HTTP server from Express app
 const httpServer = http.createServer(app);

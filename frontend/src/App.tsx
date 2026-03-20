@@ -3,7 +3,9 @@ import MindmapCanvas from './components/MindmapCanvas';
 import LoginPage from './components/LoginPage';
 import './App.css';
 
-export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+// In production the backend serves the frontend, so we use relative URLs.
+// In local dev we fall back to localhost:3001.
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 function isTokenValid(token: string): boolean {
   try {

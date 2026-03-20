@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orchestrator
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - traefik_net
+    labels:
+      - "traefik.enable=true"
+      # HTTP router → redirect to HTTPS
+      - "traefik.http.routers.orchestrator-http.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.orchestrator-http.entrypoints=web"
+      - "traefik.http.routers.orchestrator-http.middlewares=redirect-to-https"
+      # HTTPS router (handles both REST + WebSocket on same port)
+      - "traefik.http.routers.orchestrator.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.orchestrator.entrypoints=websecure"
+      - "traefik.http.routers.orchestrator.tls.certresolver=myresolver"
+      - "traefik.http.services.orchestrator.loadbalancer.server.port=3001"
+      # Middleware: redirect HTTP → HTTPS
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+
+networks:
+  traefik_net:
+    external: true
+    name: hetzner_openwebui_default

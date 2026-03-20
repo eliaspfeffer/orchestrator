@@ -152,7 +152,17 @@ export class WebSocketManager {
   }
 }
 
-const WS_BASE_URL = (import.meta.env.VITE_WS_URL || 'ws://localhost:3001') as string;
+// In production, derive WS URL from the current page's host (same origin).
+// In local dev, fall back to localhost:3001.
+function getWsBaseUrl(): string {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL as string;
+  if (typeof window !== 'undefined' && window.location.host !== 'localhost:5173') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${proto}//${window.location.host}`;
+  }
+  return 'ws://localhost:3001';
+}
+const WS_BASE_URL = getWsBaseUrl();
 
 // Export a module-level singleton so all terminal components share one connection
 export const wsManager = new WebSocketManager(WS_BASE_URL);
